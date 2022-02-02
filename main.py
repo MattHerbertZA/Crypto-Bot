@@ -32,7 +32,8 @@ def getHourlyData(symbol):
 # This function caluclates the simple moving average (SMA) from the last 6 hours (FastSMA) and last 24 hours(SlowSMA). 
 def applyTechnicals(df):
     df['FastSMA'] = df.Close.rolling(7).mean()
-    df['SlowSMA'] = df.Close.rolling(25).mean()
+    df['SlowSMA'] = df.Close.rolling(24).mean()
+
 
 # This function calculates if a buy or sell order should be placed and executes the order
 def trader(curr):
@@ -44,6 +45,8 @@ def trader(curr):
     applyTechnicals(df)
     # Get the last row of the dataframe as SlowSMA only shows on the last row
     lastrow = df.iloc[-1]
+    print(df)
+    print(lastrow)
     # If the currency is not in a buy position 
     if not pos_frame[pos_frame.Currency == curr].position.values[0]:
         # If the FastSMA is bigger than the SlowSMA that indicates the price may be rising and the currency should be bought
