@@ -7,8 +7,6 @@ import time
 # Instantiate client with api keys
 client = Client(config.api_key, config.api_secret)
 
-print(client)
-
 # Reads the predefined currencies, position and amount from the csv
 pos_frame = pd.read_csv('data.csv')
 
@@ -38,7 +36,7 @@ def getHourlyData(symbol):
     frame.Time = pd.to_datetime(frame.Time, unit='ms')
     return frame
 
-# This function caluclates the simple moving average (SMA) from the last 6 hours (FastSMA) and last 24 hours(SlowSMA).
+# This function calculates the simple moving average (SMA) from the last 7 hours (FastSMA) and last 24 hours(SlowSMA).
 
 
 def applyTechnicals(df):
@@ -56,6 +54,9 @@ def trader(curr):
     applyTechnicals(df)
     # Get the last row of the dataframe as SlowSMA only shows on the last row
     lastrow = df.iloc[-1]
+
+    print(df)
+
     # If the currency is not in a buy position
     if not pos_frame[pos_frame.Currency == curr].position.values[0]:
         # If the FastSMA is bigger than the SlowSMA that indicates the price may be rising and the currency should be bought
