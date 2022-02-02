@@ -1,13 +1,20 @@
 import pandas as pd
 from binance import Client
 import config
+
+import time
+
 # Instantiate client with api keys
 client = Client(config.api_key, config.api_secret)
+
+print(client)
 
 # Reads the predefined currencies, position and amount from the csv
 pos_frame = pd.read_csv('data.csv')
 
 # This function allows you to change the position values in the csv. 0 is sell, 1 is buy
+
+
 def changePos(curr, buy=True):
     if buy:
         pos_frame.loc[pos_frame.Currency == curr, 'position'] = 1
@@ -17,6 +24,8 @@ def changePos(curr, buy=True):
     pos_frame.to_csv('data', index=False)
 
 # This function gets hourly data from Binance and creates a dataframe with relevant columns.
+
+
 def getHourlyData(symbol):
     frame = pd.DataFrame(client.get_historical_klines(
         symbol, '1h', '25 hours ago UTC'))
@@ -29,7 +38,9 @@ def getHourlyData(symbol):
     frame.Time = pd.to_datetime(frame.Time, unit='ms')
     return frame
 
-# This function caluclates the simple moving average (SMA) from the last 6 hours (FastSMA) and last 24 hours(SlowSMA). 
+# This function caluclates the simple moving average (SMA) from the last 6 hours (FastSMA) and last 24 hours(SlowSMA).
+
+
 def applyTechnicals(df):
     df['FastSMA'] = df.Close.rolling(7).mean()
     df['SlowSMA'] = df.Close.rolling(24).mean()
@@ -45,9 +56,7 @@ def trader(curr):
     applyTechnicals(df)
     # Get the last row of the dataframe as SlowSMA only shows on the last row
     lastrow = df.iloc[-1]
-    print(df)
-    print(lastrow)
-    # If the currency is not in a buy position 
+    # If the currency is not in a buy position
     if not pos_frame[pos_frame.Currency == curr].position.values[0]:
         # If the FastSMA is bigger than the SlowSMA that indicates the price may be rising and the currency should be bought
         if lastrow.FastSMA > lastrow.SlowSMA:
@@ -71,5 +80,9 @@ def trader(curr):
             changePos(curr, buy=False)
 
 
-for coin in pos_frame.Currency:
-    trader(coin)
+# Loop script every 5 mins
+# TODO: Change this to windows scheduler
+while True:
+    for coin in pos_frame.Currency:
+        trader(coin)
+    time.sleep(300)
